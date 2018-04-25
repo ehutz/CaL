@@ -9,8 +9,16 @@ from flask import Flask, request, abort
 from zeroconf import ServiceInfo, Zeroconf
 import fcntl
 import struct
+import mongodb_setup
 
 # Audio code below found at : https://stackoverflow.com/questions/892199/detect-record-audio-in-python
+
+# Installing pyaudio on your raspberry pi
+# Follow instructions at https://www.raspberrypi.org/forums/viewtopic.php?t=25173
+    # sudo git clone http://people.csail.mit.edu/hubert/git/pyaudio.git
+    # sudo apt-get install libportaudio0 libportaudio2 libportaudiocpp0 portaudio19-dev
+    # sudo apt-get install python3-dev
+    # sudo python3 pyaudio/setup.py install
 
 from sys import byteorder
 from array import array
