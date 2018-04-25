@@ -15,10 +15,13 @@ import mongodb_setup
 
 # Installing pyaudio on your raspberry pi
 # Follow instructions at https://www.raspberrypi.org/forums/viewtopic.php?t=25173
+    # sudo apt-get update
+    # sudo apt-get upgrade
     # sudo git clone http://people.csail.mit.edu/hubert/git/pyaudio.git
     # sudo apt-get install libportaudio0 libportaudio2 libportaudiocpp0 portaudio19-dev
     # sudo apt-get install python3-dev
-    # sudo python3 pyaudio/setup.py install
+    # cd pyaudio
+    # sudo python3 setup.py install
 
 from sys import byteorder
 from array import array
