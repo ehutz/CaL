@@ -10,11 +10,6 @@ in a way that your server code expects.
 """
 
 # Run sudo service mongodb restart !!!!!
-# follow instructions at https://www.raspberrypi.org/forums/viewtopic.php?t=25173
-    # sudo git clone http://people.csail.mit.edu/hubert/git/pyaudio.git
-    # sudo apt-get install libportaudio0 libportaudio2 libportaudiocpp0 portaudio19-dev
-    # sudo apt-get install python3-dev
-    # sudo python3 pyaudio/setup.py install
 
 from pymongo import MongoClient
 import gridfs
