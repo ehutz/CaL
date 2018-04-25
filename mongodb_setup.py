@@ -7,24 +7,29 @@ This script will be run before validating you system separately from your server
 
 This script is important for validation. It will ensure usernames and passwords are stored in the MongoDB server
 in a way that your server code expects.
-
-Make sure there are at least 3 usernames and passwords.
-
-Make sure an additional username and password is stored where...
-	username = admin
-	password = pass
 """
 
 from pymongo import MongoClient 
 
 client = MongoClient('localhost', 27017)
 
-db = client['project_3']
-collection = db['collection_1']
+db = client['CaL'] # Capture the Lecture database
+user_collection = db['Users'] # Stores usernames (PID) and passwords
+session_collection = db['Session'] # Stores unique session ID, .mp3 file per session, Audio Breakpoint ID
+audio_collection = db['Audio'] # Stores Timestamp of audio breakpoint and corresponding image
+user_session_collection = db['User_Session'] # Stores user requested timestamps corresponding to images per session
 
-collection.remove()
+for document in user_collection.find():
+    db[document['username']].remove()
+       
+user_collection.remove()
 
-collection.insert({'username':'admin', 'password':'pass'})
-collection.insert({'username':'mad', 'password':'elyn'})
-collection.insert({'username':'liz', 'password':'hutz'})
-collection.insert({'username':'jor', 'password':'dan'})
+user_collection.insert({'username':'ehutz', 'password':'raspberry'})
+user_collection.insert({'username':'m1newc', 'password':'blueberry'})
+user_collection.insert({'username':'bliss', 'password':'blackberry'})
+
+for document in user_collection.find():
+    db[document['username']]
+    #print(document['username'])
+    
+#print(user_collection.count())
