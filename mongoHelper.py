@@ -8,6 +8,14 @@ def userExists(conn, username):
         return True
     return False
 
+#checks if a username exists and returns the boolean
+def sessionExists(conn, session):
+    db = conn.CaL
+    if db.CaL.find({'session' : session}).count() > 0:
+        return True
+    return False
+
+
 #adds a user to the list of users. Returns true if successful and
 #it is not attempting to overwrite an exxisting user
 def addUser(conn, username, password):
@@ -16,6 +24,25 @@ def addUser(conn, username, password):
     if userExists(conn, username):
         return False
     db.Users.insert({"username":username, "password":password})
+    return True
+
+#adds a session to the list of sessions. Returns true if successful and
+#it is not attempting to overwrite an existing session
+def addSession(conn, session):
+    db = conn.CaL
+    print(db.Session.count())
+    if sessionExists(conn, session):
+        return False
+    db.Session.insert({"session":session, "audio":None})
+    return True
+
+#adds audio to an existing session. Returns true if successful.
+#it is not attempting to make a new session if the session does not already exist
+def addSessionAudio(conn, session, audio):
+    db = conn.CaL
+    if sessionExists(conn, session):
+        return False
+    db.Session.update({"session":session, "audio":audio})
     return True
 
 #given a list of usernames, the session, the timestamp, and the (optional) image
@@ -53,14 +80,15 @@ def getUsernames(conn):
     for c in cursor: uList.append(c.username)
     return uList
 
-#returns the list of sessions
+#returns the list of sessions and their audio in a list of tuples
 def getSessions(conn):
     db = conn.CaL
     #print(db.Sessions.count())
     cursor = db.Session.find({})
     sList = []
-    for c in cursor: sList.append(c.username)
+    for c in cursor: sList.append((c.username, c.audio))
     return sList
+
 
 #returns the image associated with a timestamp.
 #If the image does not exist, it will returna  None type

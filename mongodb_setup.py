@@ -33,9 +33,15 @@ user_collection.remove()
 user_collection.insert({'username':'ehutz', 'password':'raspberry'})
 user_collection.insert({'username':'m1newc', 'password':'blueberry'})
 user_collection.insert({'username':'bliss', 'password':'blackberry'})
-
+session_collection.insert({'session':session, 'audio':None})
 for document in user_collection.find():
     db[document['username']]
     print(document['username'])
     
+print(user_collection.count())
+
+for document in session_collection.find():
+    db[document['session']]
+    print(document['session'])
+
 print(user_collection.count())
