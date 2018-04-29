@@ -11,11 +11,21 @@ from collections import OrderedDict
 from pprint import pprint
 import mongodb_setup
 from pymongo import MongoClient
+import rmq_params
+import pika
+import pickle
 
 LED_IP = ''
 LED_Port = 0
 Custom_IP = ''
 Custom_Port = 0
+
+# START: Setup RabbitMQ
+credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
+parameters = pika.ConnectionParameters('localhost', 5672, rmq_params.rmq_params["vhost"], credentials)
+connection = pika.BlockingConnection(parameters)
+channel = connection.channel()
+channel.exchange_declare(exchange=rmq_params.rmq_params["exchange"], exchange_type='direct', auto_delete=True)
 
 client = MongoClient('localhost', 27017)
 
@@ -235,7 +245,16 @@ if __name__ == '__main__':
     # END: FLASK
     
     try:
+        c_num = 1
+        client_num = '_' + str(c_num)
         while True:
+            # Declare client queue
+            channel.queue_declare(queue='client'+str(client_num), auto_delete=True) #TODO: Change auto_delete to False?
+            channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue='client'+str(client_num))
+        
+            c_num += 1
+            client_num = '_' + str(c_num)
+            
             sleep(0.1)
     except KeyboardInterrupt:
         pass
