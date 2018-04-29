@@ -142,38 +142,9 @@ if __name__ == '__main__':
     print("please speak a word into the microphone")
     record_to_file('test.wav')
     print("done - result written to test.wav")
+
 '''
-def getIP(ifname):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(fcntl.ioctl(
-        s.fileno(),
-        0x8915,
-        struct.pack('256s', ifname[:15])
-        )[20:24])
-IP = getIP(b'wlan0')
-start = 0
-stop = 0
-laps = []
-
-
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    
-    if len(sys.argv) > 1:
-        assert sys.argv[1:] == ['--debug']
-        logging.getLogger('zeroconf').setLevel(logging.DEBUG)
-
-    desc = {'path': '/timer'}
-    hostname = socket.gethostname()
-    info = ServiceInfo("_http._tcp.local.",
-                       "Custom_RPI._http._tcp.local.",
-                       socket.inet_aton(IP), 20000, 0, 0,
-                       desc, "ash-2.local.")
-
-    zeroconf = Zeroconf()
-    print("Registration of a service, press Ctrl-C to exit...")
-    zeroconf.register_service(info)
-
     app = Flask(__name__)
     
     
