@@ -4,6 +4,8 @@ import argparse
 import rmq_params
 import pika
 import pickle
+import datetime
+import time
 
 # START: Parse arguments
 parser = argparse.ArgumentParser()
@@ -28,10 +30,12 @@ print('[Checkpoint] Connected to vhost '
       + '\' as user \''
       + rmq_params.rmq_params["username"]
       + '\'')
-
+msg = {'username': rmq_params.rmq_params['username'], 'password':rmq_params.rmq_params['password'], 'message': ""}
 while True:
-    msg_to_send = input("Please type a message: ")
+    inputting = input("Press enter to make a timestamp")
+    now = datetime.datetime.now()
+    msg['message'] = time.mktime(now.timetuple())
     channel.basic_publish(exchange=rmq_params.rmq_params["exchange"],
                   routing_key=rmq_params.rmq_params["client_queue"],
-                  body=msg_to_send)
-            
+                  body=pickle.dumps(msg))
+    time.sleep(1)        

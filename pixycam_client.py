@@ -4,7 +4,8 @@ import argparse
 import rmq_params
 import pika
 import pickle
-
+import time
+import datetime
 # START: Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", help="TCP_PORT")
@@ -29,11 +30,14 @@ print('[Checkpoint] Connected to vhost '
       + '\' as user \''
       + rmq_params.rmq_params["username"]
       + '\'')
-
-while True:
-    msg_to_send = input("PixyCam, please type a message: ")
+i = 0
+msg = {'username': rmq_params.rmq_params['username'], 'password':rmq_params.rmq_params['password'], 'message': ""}
+while i <= 300:    
+    now = datetime.datetime.now()
+    msg['message'] = time.mktime(now.timetuple())
     channel.basic_publish(exchange=rmq_params.rmq_params["exchange"],
                   routing_key=rmq_params.rmq_params["pixycam_queue"],
-                  body=msg_to_send)
-            
+                  body=pickle.dumps(msg))
+    time.sleep(0.01)
+    i = i + 1
 
