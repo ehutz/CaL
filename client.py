@@ -8,7 +8,7 @@ import pickle
 # START: Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", help="TCP_PORT")
-
+args = parser.parse_args()
 if args.s:
     rmq_host = args.s
 
