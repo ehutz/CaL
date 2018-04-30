@@ -13,8 +13,8 @@
 # "led_queue": "ledstatus"}
 
 rmq_params = {"vhost": "team4_vhost", 
-"username": "liz", 
+"username": "ehutz", 
 "password": "raspberry", 
-"exchange": "team4_ex", 
-"order_queue": "order_q",
-"led_queue": "led_q"}
+"exchange": "team4_ex",
+"client_queue": "client_q",
+"pixycam_queue": "pixycam_q"}
