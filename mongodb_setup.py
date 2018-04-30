@@ -12,14 +12,10 @@ in a way that your server code expects.
 # Run sudo service mongodb restart !!!!!
 
 from pymongo import MongoClient
-import gridfs
 
-client = MongoClient('192.168.1.16', 27017)
+client = MongoClient('192.168.1.148', 27017)
 
 db = client['CaL'] # Capture the Lecture database
-fs = gridfs.GridFS(db)
-a = fs.put(b'test.wav')
-print(fs.get(a).read())
 user_collection = db['Users'] # Stores usernames (PID) and passwords
 session_collection = db['Session'] # Stores unique session ID, .mp3 file per session, Audio Breakpoint ID
 audio_collection = db['Audio'] # Stores Timestamp of audio breakpoint and corresponding image
