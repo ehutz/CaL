@@ -30,6 +30,8 @@ user_collection.insert({'username':'ehutz', 'password':'raspberry'})
 user_collection.insert({'username':'m1newc', 'password':'blueberry'})
 user_collection.insert({'username':'bliss', 'password':'blackberry'})
 
+# START: DEBUG
+'''
 for document in user_collection.find():
     db[document['username']]
     print(document['username'])
@@ -41,3 +43,5 @@ for document in session_collection.find():
     print(document['session'])
 
 print(user_collection.count())
+'''
+# END: DEBUG
