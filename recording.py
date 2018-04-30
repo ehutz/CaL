@@ -139,11 +139,10 @@ def runPixy():
 						found = True;
 						#collection.replace_one({'sig':elem['sig']}, elem)
 				if not found:
-					db.collection.remove({})
+					collection.remove()
 					collection.insert_one(elem)
 					pprint.pprint(elem)
 		print(collection.count())
-		print('\n')
 
 #Main -> Creates a process to read, store, and update data provded by the PixyCam.
 # Runs the flask app to connect to and communicate with the server. Then joins
