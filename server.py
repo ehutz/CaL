@@ -3,7 +3,6 @@ import logging
 import socket
 import sys
 from time import sleep
-from zeroconf import ServiceBrowser, ServiceStateChange, Zeroconf
 import requests
 from canvas_token import *
 import json
@@ -14,11 +13,6 @@ from pymongo import MongoClient
 import rmq_params
 import pika
 import pickle
-
-LED_IP = ''
-LED_Port = 0
-Custom_IP = ''
-Custom_Port = 0
 
 # START: Setup RabbitMQ
 credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
@@ -104,46 +98,8 @@ def upload(filename, file):
             ('file', file)])
     r = requests.post(list["upload_url"], files = files)
     return 'File successfully uploaded to Canvas!'
-			
-def on_service_state_change(zeroconf, service_type, name, state_change):
-    print("Service %s of type %s state changed: %s" % (name, service_type, state_change))
-    
-    if state_change is ServiceStateChange.Added:
-        info = zeroconf.get_service_info(service_type, name)
-        if info:
-            print("  Address: %s:%d" % (socket.inet_ntoa(info.address), info.port))
-            print("  Weight: %d, priority: %d" % (info.weight, info.priority))
-            print("  Server: %s" % (info.server,))
-            if info.properties:
-                print("  Properties are:")
-                for key, value in info.properties.items():
-                    print("    %s: %s" % (key, value))
-            else:
-                print("  No properties")
-                
-            global LED_IP, LED_Port, Custom_IP, Custom_Port
-            if "LED_RPI" in name:
-                LED_IP = socket.inet_ntoa(info.address)
-                LED_Port = info.port
-            elif "Custom_RPI" in name:
-                Custom_IP = socket.inet_ntoa(info.address)
-                Custom_Port = info.port
-        else:
-            print("  No info")
-        print('\n')
-        
-    
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    if len(sys.argv) > 1:
-        assert sys.argv[1:] == ['--debug']
-        logging.getLogger('zeroconf').setLevel(logging.DEBUG)
-
-    zeroconf = Zeroconf()
-    print("\nBrowsing services, press Ctrl-C to exit...\n")
-    browser = ServiceBrowser(zeroconf, "_http._tcp.local.", handlers=[on_service_state_change])
-    
     # Run Flask server
     app = Flask(__name__)
 
@@ -259,7 +215,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     finally:
-        zeroconf.close()
+        pass
         
 
     
