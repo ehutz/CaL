@@ -13,7 +13,7 @@ in a way that your server code expects.
 
 from pymongo import MongoClient
 
-client = MongoClient('192.168.1.148', 27017)
+client = MongoClient('192.168.1.16', 27017)
 
 db = client['CaL'] # Capture the Lecture database
 user_collection = db['Users'] # Stores usernames (PID) and passwords
@@ -29,7 +29,7 @@ user_collection.remove()
 user_collection.insert({'username':'ehutz', 'password':'raspberry'})
 user_collection.insert({'username':'m1newc', 'password':'blueberry'})
 user_collection.insert({'username':'bliss', 'password':'blackberry'})
-session_collection.insert({'session':session, 'audio':None})
+
 for document in user_collection.find():
     db[document['username']]
     print(document['username'])
