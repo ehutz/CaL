@@ -5,7 +5,7 @@ import sys
 import array
 import datetime
 from time import sleep, time
-from flask import Flask, request, abort
+from flask import Flask, request, abort, send_file
 from zeroconf import ServiceInfo, Zeroconf
 import fcntl
 import struct
@@ -139,84 +139,23 @@ def record_to_file(path):
     wf.close()
 
 if __name__ == '__main__':
-    print("please speak a word into the microphone")
-    record_to_file('test.wav')
-    print("done - result written to test.wav")
-
-'''
-if __name__ == '__main__':
     app = Flask(__name__)
-    
-    
-    def reviewTimer():
-        printout = ""
-        list_out = ""
-        if len(laps) > 0:
-            list_out = "Lap List: \n\r" + " seconds,\n\r".join(laps) + " seconds"
-        if start <= 0:
-            printout = "Last timer end length: " + str(stop)
+
+    @app.route("/audio/record",  methods = ['GET'])
+    def recordAudio():
+        requested_audio_filename = request.args.get('filename', type=str, default= "")
+        print("Recording...")
+        record_to_file('../CaL_Audio/'+requested_audio_filename + '.wav')
+        return "Done - result written to " + requested_audio_filename + '.wav'
+            
+    @app.route("/audio/retrieve_file",  methods = ['GET'])
+    def getAudio():
+        requested_audio_filename = request.args.get('filename', type=str, default= "")
+        if open('../CaL_Audio/'+requested_audio_filename+'.wav'):
+            return send_file('../CaL_Audio/'+requested_audio_filename + '.wav', mimetype="audio/wav", as_attachment=True,
+                             attachment_filename=requested_audio_filename + '.wav')
         else:
-            printout = "Current running time: " + str(time() - start) + " seconds"
-        return  ("This is a timer. \n\r"
-        + printout
-        + "\n"
-        + list_out
-        + "\n")
-
-
-    def startTimer():
-        global start, laps
-        start = time()
-        laps=[]
-        return "starting timer!"
-    
-    
-    def checkTimer():
-        if start > 0:
-            curr_lap = time() - start
-            return str(curr_lap)
-        else:
-            return "not running"
-
-
-    def stopTimer():
-        global stop, start
-        if start > 0:
-            stop = time() - start
-            start = 0
-            return str(stop)
-        else:
-            return "you must start the timer"
-    
-    
-    def lapTimer():
-        global start, laps
-        curr_lap = time() - start
-        laps.append(str(curr_lap))
-        return str(curr_lap)
-
-
-    @app.route("/timer",  methods = ['GET'])
-    def getTimer():
-        fcn = request.args.get('fcn', type=str, default= "")
-        if fcn == "check":
-            return checkTimer() + "\n"
-        return reviewTimer() + "\n"
-
-
-    @app.route("/timer",  methods = ['POST'])
-    def postTimer():
-        fcn = request.args.get('fcn', type=str, default="")
-        ret = ""
-        print(fcn)
-        if fcn == "start":
-            ret = startTimer()
-        elif fcn == "stop":
-            ret = stopTimer()
-        elif fcn == "lap":
-            ret = lapTimer()
-        return (ret + "\n\r")
-
+            return requested_audio_filename + ".wav file does not exist."
     
     app.run(host="0.0.0.0", port=20000, debug=True)
        
@@ -228,6 +167,3 @@ if __name__ == '__main__':
         pass
     finally:
         print("Unregistering...")
-        zeroconf.unregister_service(info)
-        zeroconf.close()
-'''

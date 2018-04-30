@@ -32,8 +32,8 @@ import pymongo
 from flask import * #shouldnt need from
 import pprint
 
-#Static Variables
-
+#GLOBAL Variables
+dictList = []
 
 #Set up piping from ./hello_pixy executable
 process = subprocess.Popen(['sudo', './hello_pixy'], stdout=subprocess.PIPE)
@@ -76,7 +76,7 @@ def removeCCStrings(string):
 def convertToDict(temp):
 	list = []
 	tempDict = {}
-	dictList = []
+	tempDictList = []
 	for elem in temp:
 		list = elem.split()
 		tempDict = dict(zip(list[::2],list[1::2]))
@@ -84,8 +84,34 @@ def convertToDict(temp):
 		del tempDict['y']
 		del tempDict['height']
 		del tempDict['width']
-		dictList.append(tempDict)
-	return dictList
+		tempDictList.append(tempDict)
+	return tempDictList
+		
+def compareToMaster(tempDictList):
+	if(len(tempDictList) == 0):
+		for dict in dictList:
+			dict['history'] = dict['history'] - 1
+			if(dict['history'] < 0):
+				dictList.remove(dict)
+	for elem in tempDictList:
+		found = False
+		for dict in dictList:
+			if(dict['sig'] == elem['sig']):
+				print("dict sig found in curr frame")
+				found = True
+				if(dict['history'] < 25):
+					dict['history'] = dict['history'] + 1
+				break
+			else:
+				dict['history'] = dict['history'] - 1
+				if(dict['history'] < 0):
+					dictList.remove(dict)
+				break
+		if(found == False):
+			elem['history'] = 1
+			dictList.append(elem)
+		else:
+			break
 
 #This GET method uses flask to send retrieved PixyCam data to the server. The server
 # calls this function and requests a single sig to get the data of which is 
@@ -125,25 +151,34 @@ def runPixy():
 	while True:
 		stringList = []
 		requestPixycamFrame(stringList)
-		dictList = convertToDict(stringList)
-		#for elem in dictList:
-			#pprint.pprint(elem)
+		tempDictList = convertToDict(stringList)
+		print("CURRET FRAME DICT")
+		print(len(tempDictList))
+		for elem in tempDictList:
+			pprint.pprint(elem)
+		compareToMaster(tempDictList)
+		print("MASTER DICT")
+		print(len(dictList))
 		for elem in dictList:
-			found = False;
-			if collection.count() == 0:
-				collection.insert_one(elem)
+			if(elem['history'] > 5):
 				pprint.pprint(elem)
-			else:
-				for temp in collection.find():
-					if(elem['sig'] == temp['sig']):
-						found = True;
-						#collection.replace_one({'sig':elem['sig']}, elem)
-				if not found:
-					db.collection.remove({})
-					collection.insert_one(elem)
-					pprint.pprint(elem)
-		print(collection.count())
 		print('\n')
+
+		# for elem in dictList:
+			# found = False;
+			# if collection.count() == 0:
+				# collection.insert_one(elem)
+				# pprint.pprint(elem)
+			# else:
+				# for temp in collection.find():
+					# if(elem['sig'] == temp['sig']):
+						# found = True;
+						# #collection.replace_one({'sig':elem['sig']}, elem)
+				# if not found:
+					# collection.remove()
+					# collection.insert_one(elem)
+					# pprint.pprint(elem)
+		# print(collection.count())
 
 #Main -> Creates a process to read, store, and update data provded by the PixyCam.
 # Runs the flask app to connect to and communicate with the server. Then joins
