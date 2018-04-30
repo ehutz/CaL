@@ -4,7 +4,7 @@ import socket
 import sys
 from time import sleep
 import requests
-from canvas_token import *
+#from canvas_token import *
 import json
 from collections import OrderedDict
 from pprint import pprint
@@ -35,6 +35,7 @@ client = MongoClient('localhost', 27017)
 
 db = client['CaL']
 
+'''
 token = {'access_token': canvas_token}
 downloadable_files = []
 downloadable_files_w_url = []
@@ -107,7 +108,7 @@ def upload(filename, file):
             ('file', file)])
     r = requests.post(list["upload_url"], files = files)
     return 'File successfully uploaded to Canvas!'
-
+'''
 def callback(ch, method, properties, body):
     print(body)
     if(body == b'[Checkpoint] In callback function'): # TODO: This needs updated
@@ -116,7 +117,7 @@ def callback(ch, method, properties, body):
 if __name__ == '__main__':
     # Run Flask server
     app = Flask(__name__)
-
+    '''
     @app.route("/canvas")
     def canvas():
         is_valid = check_username_password()
@@ -212,6 +213,7 @@ if __name__ == '__main__':
         return 'Bad'
         
     app.run(host="0.0.0.0", port=20002, debug=True)
+    '''
     # END: FLASK
     
     try:
