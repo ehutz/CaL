@@ -19,12 +19,21 @@ credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_param
 parameters = pika.ConnectionParameters('localhost', 5672, rmq_params.rmq_params["vhost"], credentials)
 connection = pika.BlockingConnection(parameters)
 channel = connection.channel()
+
+# Declaire RabbitMQ exchange
 channel.exchange_declare(exchange=rmq_params.rmq_params["exchange"], exchange_type='direct', auto_delete=True)
 
+# Declare client queue
+channel.queue_declare(queue=rmq_params.rmq_params["client_queue"], auto_delete=True)
+channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue=rmq_params.rmq_params["client_queue"])
+
+# Declare PixyCam Client queue
+channel.queue_declare(queue=rmq_params.rmq_params["pixycam_queue"], auto_delete=True)
+channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue=rmq_params.rmq_params["pixycam_queue"])
+            
 client = MongoClient('localhost', 27017)
 
-db = client['project_3']
-collection = db['collection_1']
+db = client['CaL']
 
 token = {'access_token': canvas_token}
 downloadable_files = []
@@ -99,6 +108,11 @@ def upload(filename, file):
     r = requests.post(list["upload_url"], files = files)
     return 'File successfully uploaded to Canvas!'
 
+def callback(ch, method, properties, body):
+    print(body)
+    if(body == b'[Checkpoint] In callback function'): # TODO: This needs updated
+        exit()
+        
 if __name__ == '__main__':
     # Run Flask server
     app = Flask(__name__)
@@ -201,15 +215,12 @@ if __name__ == '__main__':
     # END: FLASK
     
     try:
-        c_num = 1
-        client_num = '_' + str(c_num)
         while True:
-            # Declare client queue
-            channel.queue_declare(queue='client'+str(client_num), auto_delete=True) #TODO: Change auto_delete to False?
-            channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue='client'+str(client_num))
-        
-            c_num += 1
-            client_num = '_' + str(c_num)
+            channel.basic_consume(callback,
+                      queue=rmq_params.rmq_params["client_queue"],
+                      no_ack=True)
+
+            channel.start_consuming()
             
             sleep(0.1)
     except KeyboardInterrupt:

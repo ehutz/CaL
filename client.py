@@ -1,8 +1,16 @@
 #!/usr/bin/python
 
+import argparse
 import rmq_params
 import pika
 import pickle
+
+# START: Parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", help="TCP_PORT")
+
+if args.s:
+    rmq_host = args.s
 
 # Setup RabbitMQ
 credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
@@ -21,13 +29,9 @@ print('[Checkpoint] Connected to vhost '
       + rmq_params.rmq_params["username"]
       + '\'')
 
-def callback(ch, method, properties, body):
-    print(body)
-    if(body == b'[Checkpoint] Order Update: We finished processing your order.'): # TODO: This needs updated
-        exit()
-
-channel.basic_consume(callback,
-                      queue="", # TODO: Need to fill something in here
-                      no_ack=True)
-
-channel.start_consuming()
+while True:
+    msg_to_send = input("Please type a message: ")
+    channel.basic_publish(exchange=rmq_params.rmq_params["exchange"],
+                  routing_key=rmq_params.rmq_params["client_queue"],
+                  body=msg_to_send)
+            
