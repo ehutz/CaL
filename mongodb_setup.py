@@ -13,18 +13,19 @@ in a way that your server code expects.
 
 from pymongo import MongoClient
 
-client = MongoClient('192.168.1.16', 27017)
+client = MongoClient('192.168.1.148', 27017)
 
 db = client['CaL'] # Capture the Lecture database
 user_collection = db['Users'] # Stores usernames (PID) and passwords
-session_collection = db['Session'] # Stores unique session ID, .mp3 file per session, Audio Breakpoint ID
+session_collection = db['Session'] # Stores unique session ID, .wav file per session, Audio Breakpoint ID
 audio_collection = db['Audio'] # Stores Timestamp of audio breakpoint and corresponding image
-user_session_collection = db['User_Session'] # Stores user requested timestamps corresponding to images per session
+#user_session_collection = db['User_Session'] # Stores user requested timestamps corresponding to images per session
 
 for document in user_collection.find():
     db[document['username']].remove()
        
 user_collection.remove()
+session_collection.remove()
 
 user_collection.insert({'username':'ehutz', 'password':'raspberry'})
 user_collection.insert({'username':'m1newc', 'password':'blueberry'})

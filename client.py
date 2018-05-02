@@ -6,13 +6,16 @@ import pika
 import pickle
 import datetime
 import time
+from flask import Flask, request
+import requests
 
 # START: Parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-s", help="TCP_PORT")
+parser.add_argument("-s", help="TCP_IP")
 args = parser.parse_args()
 if args.s:
     rmq_host = args.s
+    host_ip = args.s
 
 # Setup RabbitMQ
 credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
@@ -38,4 +41,12 @@ while True:
     channel.basic_publish(exchange=rmq_params.rmq_params["exchange"],
                   routing_key=rmq_params.rmq_params["client_queue"],
                   body=pickle.dumps(msg))
-    time.sleep(1)        
+    time.sleep(1)
+    
+    status = requests.get('http://'+host_ip+':20002/status')
+    print(status.text)
+    if status.text == 'SESSION COMPLETE':
+        audio_file = requests.get('http://'+host_ip+':20002/audio')
+        break
+    
+            

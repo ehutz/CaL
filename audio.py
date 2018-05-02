@@ -10,6 +10,7 @@ from zeroconf import ServiceInfo, Zeroconf
 import fcntl
 import struct
 import mongodb_setup
+from mongoHelper import *
 
 # Audio code below found at : https://stackoverflow.com/questions/892199/detect-record-audio-in-python
 
@@ -30,11 +31,22 @@ from struct import pack
 import pyaudio
 import wave
 
+import argparse
+
+# START: Parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", help="TCP_IP")
+args = parser.parse_args()
+if args.s:
+    host_ip = args.s
+
 THRESHOLD = 500
 CHUNK_SIZE = 1024
 FORMAT = pyaudio.paInt16
 RATE = 44100
-RECORD_SECONDS = 20 # 1 hour and 20 minutes (4800 seconds)
+#RECORD_SECONDS = 20 # 1 hour and 20 minutes (4800 seconds)
+
+conn = MongoClient(host_ip, 27017)
 
 def is_silent(snd_data):
     "Returns 'True' if below the 'silent' threshold"
@@ -81,7 +93,7 @@ def add_silence(snd_data, seconds):
     r.extend([0 for i in range(int(seconds*RATE))])
     return r
 
-def record():
+def record(record_sec):
     """
     Record a word or words from the microphone and 
     return the data as an array of signed shorts.
@@ -102,7 +114,7 @@ def record():
     r = array('h')
 
     #while 1:
-    for i in range(0, int(44100 / CHUNK_SIZE * RECORD_SECONDS)):
+    for i in range(0, int(44100 / CHUNK_SIZE * record_sec)):
         # little endian, signed short
         snd_data = array('h', stream.read(CHUNK_SIZE))
         if byteorder == 'big':
@@ -126,9 +138,9 @@ def record():
     #r = add_silence(r, 0.5)
     return sample_width, r
 
-def record_to_file(path):
+def record_to_file(path, record_sec):
     "Records from the microphone and outputs the resulting data to 'path'"
-    sample_width, data = record()
+    sample_width, data = record(record_sec)
     data = pack('<' + ('h'*len(data)), *data)
 
     wf = wave.open(path, 'wb')
@@ -139,13 +151,19 @@ def record_to_file(path):
     wf.close()
 
 if __name__ == '__main__':
+    print('[Checkpoint] audio.py running...')
+    
     app = Flask(__name__)
 
     @app.route("/audio/record",  methods = ['GET'])
     def recordAudio():
         requested_audio_filename = request.args.get('filename', type=str, default= "")
+        session_name = request.args.get('session', type=str, default= "")
+        time_to_record_sec = request.args.get('record_time_sec', type=int, default= -1)
+        
         print("Recording...")
-        record_to_file('../CaL_Audio/'+requested_audio_filename + '.wav')
+        record_to_file('../CaL_Audio/'+requested_audio_filename + '.wav', time_to_record_sec)
+        addSessionAudio(conn, session_name, requested_audio_filename+'.wav')
         return "Done - result written to " + requested_audio_filename + '.wav'
             
     @app.route("/audio/retrieve_file",  methods = ['GET'])
@@ -161,9 +179,8 @@ if __name__ == '__main__':
        
     try:
         while True:
-            print("running")
             sleep(0.1)
     except KeyboardInterrupt:
         pass
     finally:
-        print("Unregistering...")
+        print("Done")

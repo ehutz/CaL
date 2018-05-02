@@ -2,17 +2,33 @@ from flask import Flask, request, abort
 import logging
 import socket
 import sys
-from time import sleep
+from time import sleep, mktime
 import requests
 #from canvas_token import *
 import json
 from collections import OrderedDict
 from pprint import pprint
-import mongodb_setup
+from mongoHelper import *
 from pymongo import MongoClient
 import rmq_params
 import pika
 import pickle
+import datetime
+
+import argparse
+
+# START: Parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("-t", type=float, help="RECORD_TIME")
+args = parser.parse_args()
+if args.t:
+    audio_record_time_seconds = args.t
+    
+get_now = datetime.datetime.now()
+server_start_time = mktime(get_now.timetuple())
+session = get_now.strftime("Session_%Y_%m_%d_%H_%M_%S")
+
+STATUS = 'IN PROGRESS' # Initial status state
 
 # START: Setup RabbitMQ
 credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
@@ -31,10 +47,10 @@ channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue=rmq_params.
 channel.queue_declare(queue=rmq_params.rmq_params["pixycam_queue"], auto_delete=True)
 channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue=rmq_params.rmq_params["pixycam_queue"])
             
-client = MongoClient('localhost', 27017)
-
-db = client['CaL']
-
+conn = MongoClient('localhost', 27017)
+addSession(conn, session)
+pprint(getSessions(conn))
+pprint(getUsernames(conn))
 '''
 token = {'access_token': canvas_token}
 downloadable_files = []
@@ -109,46 +125,42 @@ def upload(filename, file):
     r = requests.post(list["upload_url"], files = files)
     return 'File successfully uploaded to Canvas!'
 '''
-def callback(ch, method, properties, body):
-    print(body)
-    if(body == b'[Checkpoint] In callback function'): # TODO: This needs updated
-        exit()
+def callback_client(ch, method, properties, body):
+    bod = pickle.loads(body)
+    pprint(pickle.loads(body))
+    
+    addTimestamp(conn, bod['username'], session, str(bod['message'] - server_start_time), None)
+    
+    #exit() # Used to terminate server
+        
+def callback_pixycam(ch, method, properties, body):
+    bod = pickle.loads(body)
+    pprint(pickle.loads(body))
+    
+    addTimestamp(conn, bod['username'], session, str(bod['message'] - server_start_time), None)
+    
+    #exit() # Used to terminate server
         
 if __name__ == '__main__':
     # Run Flask server
     app = Flask(__name__)
+    
+    @app.route("/status", methods=['GET'])
+    def status():
+        print(server_start_time+audio_record_time_seconds)
+        print(mktime(datetime.datetime.now().timetuple()))
+        if (float(server_start_time) + float(audio_record_time_seconds)) > mktime(datetime.datetime.now().timetuple()):
+            return 'SESSION IN PROGRESS'
+        else:
+            return 'SESSION COMPLETE'
+        
+    @app.route("/audio", methods=['GET'])
+    def audio():  
+        audio_file = requests.get('http://0.0.0.0:20000/audio/retieve_file?filename='+ session)
+        print(audio_file.content)
+        return audio_file
+        
     '''
-    @app.route("/canvas")
-    def canvas():
-        is_valid = check_username_password()
-        if(is_valid):
-            return list_group_files()
-        else:
-            abort(403)
-        return 'Bad'
-    
-    @app.route("/canvas/download")
-    def canvas_dowload():
-        is_valid = check_username_password()
-        if(is_valid):
-            requested_filename = request.args.get('filename', type=str, default='')
-            return download(requested_filename)
-        else:
-            abort(403)
-        return 'Bad'
-    
-    @app.route("/canvas/upload", methods = ['POST'])
-    def canvas_upload():
-        is_valid = check_username_password()
-        if(is_valid):
-            requested_filename = request.form.get('filename', type=str, default=None)
-            requested_file = request.files['file']
-            print(requested_file)
-            return upload(requested_filename, requested_file)
-        else:
-            abort(403)
-        return 'Bad'
-    
     @app.route("/led", methods=['GET', 'POST'])
     def led():
         is_valid = check_username_password()
@@ -211,17 +223,29 @@ if __name__ == '__main__':
         elif not custom_exists:
             abort(503)
         return 'Bad'
-        
+    '''    
     app.run(host="0.0.0.0", port=20002, debug=True)
-    '''
+    
     # END: FLASK
     
     try:
         while True:
-            channel.basic_consume(callback,
+            # Tell audio to start recording
+            r = requests.get('http://0.0.0.0:20000/audio/record?filename='
+                             + session
+                             + '&session='
+                             + session
+                             + '&record_time_sec='
+                             + audio_record_time_seconds)
+            
+            channel.basic_consume(callback_client,
                       queue=rmq_params.rmq_params["client_queue"],
                       no_ack=True)
-
+            
+            channel.basic_consume(callback_pixycam,
+                      queue=rmq_params.rmq_params["pixycam_queue"],
+                      no_ack=True)
+            
             channel.start_consuming()
             
             sleep(0.1)
