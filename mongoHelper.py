@@ -110,7 +110,7 @@ def addTimestamp(conn, username, session, timestamp, image):
             #print(curr_stamps)
             #print(",".join(curr_stamps))
             
-            pid_collection.update({'session' : session}, {'timestamps' : curr_stamps})
+            pid_collection.update({'session' : session}, {'session' : session, 'timestamps' : curr_stamps})
         else:
             #print('ELSE: new collection')
             pid_collection.insert({'session' : session, 'timestamps' : timestamp})
