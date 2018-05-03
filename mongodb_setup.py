@@ -20,10 +20,11 @@ user_collection = db['Users'] # Stores usernames (PID) and passwords
 session_collection = db['Session'] # Stores unique session ID, .wav file per session, Audio Breakpoint ID
 audio_collection = db['Audio'] # Stores Timestamp of audio breakpoint and corresponding image
 #user_session_collection = db['User_Session'] # Stores user requested timestamps corresponding to images per session
-
+status_collection = db['Status']
 for document in user_collection.find():
     db[document['username']].remove()
        
+status_collection.remove()
 user_collection.remove()
 session_collection.remove()
 
@@ -31,7 +32,7 @@ user_collection.insert({'username':'admin', 'password':'VT_Prof'})
 user_collection.insert({'username':'ehutz', 'password':'raspberry'})
 user_collection.insert({'username':'m1newc', 'password':'blueberry'})
 user_collection.insert({'username':'bliss', 'password':'blackberry'})
-
+status_collection.insert({'current_session': '', 'status': 'inactive'})
 # START: DEBUG
 '''
 for document in user_collection.find():

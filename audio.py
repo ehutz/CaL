@@ -164,13 +164,12 @@ if __name__ == '__main__':
         session_name = request.args.get('session', type=str, default= "")
         global time_to_record_sec
         time_to_record_sec = request.args.get('record_time_sec', type=float, default= -1)
-        print(time_to_record_sec)
-        print("Recording...")
         global audio_record_start_time
         audio_record_start_time = mktime(datetime.datetime.now().timetuple())
         record_to_file('../CaL_Audio/'+requested_audio_filename + '.wav', time_to_record_sec)
         print("Finished Recording")
         addSessionAudio(conn, session_name, requested_audio_filename+'.wav')
+        setStatus(conn, None, 'COMPLETE')
         return "Done - result written to " + requested_audio_filename + '.wav'
             
     @app.route("/audio/retrieve_file",  methods = ['GET'])

@@ -2,6 +2,30 @@ from pymongo import MongoClient
 from pprint import pprint
 import rmq_params
 
+def setStatus(conn, session, status):
+    db = conn.CaL
+    stat_coll = db['Status']
+    if(session is None):
+        stat_doc = stat_coll.find_one({})
+        session = stat_doc['current_session']
+    stat_coll.remove()
+    stat_coll.insert({'current_session': session, 'status': status})
+
+#returns the session's status
+def getStatus(conn):
+    db = conn.CaL
+    #print(db.Users.count())
+    cursor = db.Status.find({})
+    for c in cursor:
+        return c["status"]
+    
+#returns the current session's name
+def getCurrentSession(conn):
+    db = conn.CaL
+    cursor = db.Status.find({})
+    for c in cursor:
+        return c["current_session"]
+
 #checks if a username exists and returns the boolean
 def userExists(conn, username):
     db = conn.CaL
@@ -50,7 +74,7 @@ def addSessionAudio(conn, session, audio):
     db = conn.CaL
     if sessionExists(conn, session):
         return False
-    db.Session.update({"session":session}, {"audio":audio})
+    db.Session.update({"session":session}, {"session":session, "audio":audio})
     return True
 
 #given a list of usernames, the session, the timestamp, and the (optional) image

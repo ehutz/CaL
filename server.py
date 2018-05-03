@@ -44,6 +44,7 @@ channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue=rmq_params.
             
 conn = MongoClient('localhost', 27017)
 addSession(conn, session)
+setStatus(conn, session, 'IN PROGRESS')
 #pprint(getSessions(conn))
 #pprint(getUsernames(conn))
 '''
