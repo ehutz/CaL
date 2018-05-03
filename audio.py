@@ -174,7 +174,6 @@ if __name__ == '__main__':
             
     @app.route("/audio/retrieve_file",  methods = ['GET'])
     def getAudio():
-        #requested_audio_filename = request.args.get('filename', type=str, default= "")
         if Path('../CaL_Audio/'+requested_audio_filename+'.wav').is_file():
             print('Sending file...')
             return send_file('../CaL_Audio/'+requested_audio_filename + '.wav', mimetype="audio/wav", as_attachment=True,
