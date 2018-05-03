@@ -10,6 +10,8 @@ from time import sleep
 from flask import Flask, request
 import requests
 from pprint import pprint
+from mongoHelper import *
+
 # START: Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", help="TCP_IP")
@@ -19,8 +21,14 @@ username = "ehutz"
 if args.s:
     rmq_host = args.s
     host_ip = args.s
+    
+conn = MongoClient(host_ip, 27017)
+
 if args.u:
     username = args.u
+    while ~userExists(conn, username):
+        username = input('Username does not exist. Please enter correct username: ')
+
 # Setup RabbitMQ
 credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
 parameters = pika.ConnectionParameters(rmq_host, 5672, rmq_params.rmq_params["vhost"], credentials)
