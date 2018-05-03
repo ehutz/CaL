@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from pprint import pprint
+import rmq_params
 
 #checks if a username exists and returns the boolean
 def userExists(conn, username):
@@ -151,3 +152,16 @@ def getTimestampImage(conn, session, timestamp):
     image_1 = coll.find_one({'timestamp': timestamp})
     image = image_1['image']
     return image
+
+# Saves all of the PixyCam images to local directory on client's computer
+def getPixyCamImages(conn, session):
+    db = conn.CaL
+    admin_coll = db[rmq_params.rmq_params['username']]
+    admin_session_doc = admin_coll.find_one({'session' : session})
+    admin_tmstmp_list = admin_session_doc['timestamps'].split(",")
+    for tmstmp in admin_tmstmp_list:
+        if getTimestampImage(conn, session, tmstmp) is not None:
+            with open('../CaL_Images/image_'+tmstmp+'.jpg', 'wb') as f:
+                f.write(getTimestampImage(conn, session, tmstmp))
+                f.close()
+    return 'DONE'

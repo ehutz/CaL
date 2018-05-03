@@ -59,7 +59,7 @@ def check_username_password():
 '''		
 def callback_client(ch, method, properties, body):
     bod = pickle.loads(body)
-    pprint(pickle.loads(body))
+    #pprint(pickle.loads(body))
     
     addTimestamp(conn, bod['username'], session, str(bod['message'] - server_start_time), None)
     
@@ -67,9 +67,9 @@ def callback_client(ch, method, properties, body):
         
 def callback_pixycam(ch, method, properties, body):
     bod = pickle.loads(body)
-    pprint(pickle.loads(body))
+    #pprint(pickle.loads(body))
     
-    addTimestamp(conn, bod['username'], session, str(bod['message'] - server_start_time), None)
+    addTimestamp(conn, bod['username'], session, str(float(bod['message']) - float(server_start_time)), bod['image'])
     
     #exit() # Used to terminate server
         

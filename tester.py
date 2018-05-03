@@ -27,7 +27,5 @@ session = input("Enter session name: ")
 tmstmp = input("Enter timestamp: ")
 with open('received/image_'+tmstmp+'.jpg', 'wb') as f:
     f.write(getTimestampImage(conn, session, tmstmp))
-    #for chunk in str(getTimestampImage(conn, session, tmstmp)).iter_content(chunk_size=512 * 1024):
-        #f.write(chunk)
     f.close()
 #print(userExists(conn, 'ehutz'))

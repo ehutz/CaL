@@ -58,6 +58,7 @@ while True:
     status = requests.get('http://'+host_ip+':20000/status')
     print(status.text)
     if status.text == 'SESSION COMPLETE':
+        session_name = requests.get('http://'+host_ip+':20000/session')
         audio = requests.get('http://'+host_ip+':20000/audio/retrieve_file')
         audio_filename = (audio.headers['content-disposition']).split('filename=')[-1]
         #audio_file = audio.file[audio_filename]
@@ -65,5 +66,8 @@ while True:
             for chunk in audio.iter_content(chunk_size=512 * 1024):
                 f.write(chunk)
             f.close()
+            
+        # Get PixyCam images
+        getPixyCamImages(conn, session_name)
         break
 

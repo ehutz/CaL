@@ -160,6 +160,7 @@ if __name__ == '__main__':
     def recordAudio():
         global requested_audio_filename
         requested_audio_filename = request.args.get('filename', type=str, default= "")
+        global session_name
         session_name = request.args.get('session', type=str, default= "")
         global time_to_record_sec
         time_to_record_sec = request.args.get('record_time_sec', type=float, default= -1)
@@ -188,6 +189,10 @@ if __name__ == '__main__':
             return 'SESSION IN PROGRESS'
         else:
             return 'SESSION COMPLETE'
+        
+    @app.route("/session", methods=['GET'])
+    def getSession():
+        return session_name
 
     app.run(host="0.0.0.0", port=20000, debug=True)
        
