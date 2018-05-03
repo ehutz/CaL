@@ -77,13 +77,14 @@ if __name__ == '__main__':
     try:
         while True:
             # Tell audio to start recording
+            print('[Checkpoint] GET request to audio.py to record sent')
             r = requests.get('http://0.0.0.0:20000/audio/record?filename='
                              + session
                              + '&session='
                              + session
                              + '&record_time_sec='
                              + str(audio_record_time_seconds))
-            print('[Checkpoint] GET request to audio.py to record sent')
+            
             channel.basic_consume(callback_client,
                       queue=rmq_params.rmq_params["client_queue"],
                       no_ack=True)
