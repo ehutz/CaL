@@ -9,6 +9,11 @@ def userExists(conn, username):
         return True
     return False
 
+def findPassword(conn, username):
+    db = conn.CaL
+    user = db.Users.find_one({'username' : username})
+    return user['password']
+
 #checks if a username exists and returns the boolean
 def sessionExists(conn, session):
     db = conn.CaL
