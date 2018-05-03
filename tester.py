@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pprint import pprint
 from mongoHelper import *
-conn = MongoClient('172.31.89.203', 27017)
+conn = MongoClient('192.168.1.16', 27017)
 user1 = { "username": "mike","password" : "allstar"}
 user2 = { "username": "mikey","password" : "whoo"}
 ##client = conn #MongoClient('mongodb://localhost:27017')
