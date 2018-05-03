@@ -13,7 +13,7 @@ in a way that your server code expects.
 
 from pymongo import MongoClient
 
-client = MongoClient('192.168.1.148', 27017)
+client = MongoClient('172.31.89.203', 27017)
 
 db = client['CaL'] # Capture the Lecture database
 user_collection = db['Users'] # Stores usernames (PID) and passwords

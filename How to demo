@@ -2,3 +2,9 @@ setup:
 1. make sure the rabbitmq server has ehutz as a user with all permissions on the specified vhost
 2. run clients with -s containing the rabbitmq server host's ip address
 3. (audio)
+
+Order to run:
+audio.py
+server.py
+// Add PixyCam and PiCam scripts to this list
+client.py

@@ -38,20 +38,19 @@ def addSession(conn, session):
     #print(db.Session.count())
     return True
 
-#adds audio to an existing session. Returns true if successful.
+#adds audio filename with .wav extension in the name to an existing session. Returns true if successful.
 #it is not attempting to make a new session if the session does not already exist
 def addSessionAudio(conn, session, audio):
     db = conn.CaL
     if sessionExists(conn, session):
         return False
-    db.Session.update({"session":session, "audio":audio})
+    db.Session.update({"session":session}, {"audio":audio})
     return True
 
 #given a list of usernames, the session, the timestamp, and the (optional) image
 #the timestamp is listed in the individual users' tables,
 #and the timestamp and image is stored int he session's table
-'''
-def addTimestamp(conn, usernames, session, timestamp, image):
+def addTimestampMulti(conn, usernames, session, timestamp, image):
     db = conn.CaL
     #update the session's table
     sess_collection  = db[session]
@@ -65,18 +64,26 @@ def addTimestamp(conn, usernames, session, timestamp, image):
     for username in usernames:
         if userExists(conn, username):
             pid_collection = db[username]
-            print('Username' + username)
+            #print('Username' + username)
             if pid_collection.find({'session' : session}).count() > 0:
-                print('IF: new collection')
+                #print('IF: new collection')
                 #update existing list
-                curr_stamps = pid_collection.find_one({'session' : session}).timestamps
-                curr_stamps = list(set(curr_stamps.append(timestamp)))
-                print(",".join(curr_stamps))
+                curr_stamps_1 = pid_collection.find_one({'session' : session})
+                curr_stamps = curr_stamps_1['timestamps']
+                curr_set = set(curr_stamps.append(timestamp))
+                curr_stamps = list(curr_set)
+                #print(",".join(curr_stamps))
                 pid_collection.update({'session' : session}, {'timestamps': curr_stamps})
             else:
-                print('ELSE: new collection')
+                #print('ELSE: new collection')
                 pid_collection.insert({'session' : session, 'timestamps' : [timestamp]})
-'''
+
+def removeDuplicateTS(newTS, currentTSList):
+    setTS = set(currentTSList.split(","))
+    setTS.add(newTS)
+    listTS = list(setTS)
+    return ",".join(listTS)
+
 def addTimestamp(conn, username, session, timestamp, image):
     #print(timestamp)
     db = conn.CaL
@@ -99,7 +106,7 @@ def addTimestamp(conn, username, session, timestamp, image):
             #pprint(curr_stamps_1)
             curr_stamps = curr_stamps_1['timestamps']
             #print(curr_stamps)
-            curr_stamps = curr_stamps + "," + timestamp #list(set(curr_stamps.append(timestamp)))
+            curr_stamps = removeDuplicateTS(timestamp, curr_stamps) #list(set(curr_stamps.append(timestamp)))
             #print(curr_stamps)
             #print(",".join(curr_stamps))
             
