@@ -2,14 +2,6 @@
 #Author:        Jordan Biss
 #Date Modified: 30 April 18
 #
-#The PixyCam angle measurement goes from -180 to 180 degrees. When the lower CC Sig
-# is on the right and the higher CC Sig is on the left, the angle is 0 degrees. 
-# Therefore, when the CC object is facing right, the angle is zero. As the CC object
-# rotates clockwise, the angle becomes negative. As the CC object rotates 
-# counterclockwise, the angle becomes positive.
-#The coordinates start with (0,0) in the upper left corner. The max X value is
-# 320 to the right. The max Y value is 200 down.
-
 #Hooking up PixyCam to RaspberryPi: 
 #http://www.cmucam.org/projects/cmucam5/wiki/Hooking_up_Pixy_to_a_Raspberry_Pi
 #	sudo apt-get install libusb-1.0-0.dev
@@ -22,23 +14,31 @@
 
 import json
 import subprocess
-import sys #probably don't need any more
+import sys
 import re
 import os
 import time
 import multiprocessing
-from pymongo import MongoClient #shouldnt need both
-import pymongo
-from flask import * #shouldnt need from
 import pprint
-from pptx import Presentation
-import PyPDF2
-import webbrowser
 from picamera import PiCamera
+import rmq_params
+import pika
+import pickle
+import argparse
 
+# START: Parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", help="TCP_PORT")
+args=parser.parse_args()
+rmq_host = "0.0.0.0"
+
+if args.s:
+    rmq_host = args.s
+	
 #GLOBAL Variables
 dictList = []
-conn = MongoClient('192.168.1.16', 27017)
+#conn = MongoClient('192.168.1.16', 27017)
+
 
 #Gets line from hello_pixy exe. If the line contains "frame", increment. This
 # allows the storage of each line prior to getting the following frame. If
@@ -84,6 +84,7 @@ def convertToDict(temp):
 		del tempDict['y']
 		del tempDict['height']
 		del tempDict['width']
+		tempDict['just_sent'] = False
 		tempDictList.append(tempDict)
 	return tempDictList
 		
@@ -101,8 +102,14 @@ def compareToMaster(tempDictList):
 				if(dict['history'] < 25):
 					dict['history'] = dict['history'] + 1
 				if(dict['history'] == 5):
-					#print('/slides/' + str(dict['time_found']) + '.jpg')
-					camera.capture('slides/' + str(dict['time_found']) + '.jpg')
+					filename = 'slides/' + str(dict['time_found']) + '.jpg'
+					camera.capture(filename)
+					file = open(filename,"rb")
+					msg['message'] = file.read()
+					channel.basic_publish(exchange=rmq_params.rmq_params["exchange"],
+								routing_key=rmq_params.rmq_params["pixycam_queue"],
+								body=pickle.dumps(msg))
+					dict['just_sent'] = True
 				break
 			else:
 				dict['history'] = dict['history'] - 1
@@ -128,52 +135,38 @@ def runPixy():
 		stringList = []
 		requestPixycamFrame(stringList)
 		tempDictList = convertToDict(stringList)
-		print("CURRET FRAME DICT SIZE: " + str(len(tempDictList)))
 		compareToMaster(tempDictList)
 		print("MASTER DICT")
 		print(len(dictList))
 		for elem in dictList:
-			if(elem['history'] > 5):
-				#Send to server
+			if(elem['history'] > 5) and elem['just_sent'] == True:
 				pprint.pprint(elem)
-		print('\n')
-		
-
-		# for elem in dictList:
-			# found = False;
-			# if collection.count() == 0:
-				# collection.insert_one(elem)
-				# pprint.pprint(elem)
-			# else:
-				# for temp in collection.find():
-					# if(elem['sig'] == temp['sig']):
-						# found = True;
-						# #collection.replace_one({'sig':elem['sig']}, elem)
-				# if not found:
-					# collection.remove()
-					# collection.insert_one(elem)
-					# pprint.pprint(elem)
-		# print(collection.count())
-
+				elem['just_sent'] = False
+				
+				
 #Main -> Creates a process to read, store, and update data provded by the PixyCam.
 # Runs the flask app to connect to and communicate with the server. Then joins
 # these two processes together.
-
 try:
 	#Set up camera
 	camera = PiCamera()
 	camera.start_preview()
 	time.sleep(2)
 	print("CAMERA RUNNING")
-
+	
+	# Setup RabbitMQ
+	print("SETTING UP RABBITMQ")
+	credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
+	parameters = pika.ConnectionParameters(rmq_host, 5672, rmq_params.rmq_params["vhost"], credentials)
+	connection = pika.BlockingConnection(parameters)
+	channel = connection.channel()
+	msg = {'username': rmq_params.rmq_params['username'], 'password':rmq_params.rmq_params['password'], 'message': ""}
+	print("RABBITMQ SETUP COMPLETE")
+	
 	#Set up piping from ./hello_pixy executable
 	process = subprocess.Popen(['sudo', './hello_pixy'], stdout=subprocess.PIPE)
 	runPixy()
 finally:
 	camera.stop_preview()
 	print("CAMERA STOPPED")
-	
-	
-	
-	
-	
+				
