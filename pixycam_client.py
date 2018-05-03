@@ -32,13 +32,13 @@ print('[Checkpoint] Connected to vhost '
       + '\'')
 i = 0
 msg = {'username': rmq_params.rmq_params['username'], 'password':rmq_params.rmq_params['password'], 'message': ""}
-while i <= 300:    
+while i <= 10:    
     now = datetime.datetime.now()
     msg['password'] = str(i)
     msg['message'] = time.mktime(now.timetuple())
     channel.basic_publish(exchange=rmq_params.rmq_params["exchange"],
-                  routing_key=rmq_params.rmq_params["pixycam_queue"],
+                  routing_key=rmq_params.rmq_params["client_queue"],
                   body=pickle.dumps(msg))
-    time.sleep(0.01)
+    time.sleep(0.1)
     i = i + 1
 

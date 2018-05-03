@@ -14,23 +14,28 @@ from mongoHelper import *
 
 # START: Parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-s", help="TCP_IP")
-parser.add_argument("-u", help="username" )
+parser.add_argument("-s", type=str, help="TCP_IP")
+parser.add_argument("-u", type=str, help="username" )
+parser.add_argument("-p", type=str, help="password" )
 args = parser.parse_args()
 username = "ehutz"
+password = ""
 if args.s:
     rmq_host = args.s
     host_ip = args.s
     
 conn = MongoClient(host_ip, 27017)
-
+if args.p:
+    password = args.p
 if args.u:
     username = args.u
-    while ~userExists(conn, username):
-        username = input('Username does not exist. Please enter correct username: ')
-
+    while ~userExists(conn, username) and (password != findPassword(conn, username)):
+        username = input('Username and password combination does not exist. Please enter correct username: ')
+        password = input('Password:')
+        print(findPassword(conn, username))
+    
 # Setup RabbitMQ
-credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
+credentials = pika.PlainCredentials(username, password)
 parameters = pika.ConnectionParameters(rmq_host, 5672, rmq_params.rmq_params["vhost"], credentials)
 connection = pika.BlockingConnection(parameters)
 
@@ -43,9 +48,9 @@ print('[Checkpoint] Connected to vhost '
       + ' on RMQ server at \''
       + rmq_host
       + '\' as user \''
-      + rmq_params.rmq_params["username"]
+      + username
       + '\'')
-msg = {'username': username, 'password':rmq_params.rmq_params['password'], 'message': ""}
+msg = {'username': username, 'message': ""}
 while True:
     inputting = input("Press enter to make a timestamp")
     now = datetime.datetime.now()
