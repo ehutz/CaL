@@ -143,5 +143,6 @@ def getSessions(conn):
 def getTimestampImage(conn, session, timestamp):
     db = conn.CaL
     coll = db[session]
-    image = coll.find_one({'timestamp' : timestamp}).image
+    image_1 = coll.find_one({'timestamp': timestamp})
+    image = image_1['image']
     return image
