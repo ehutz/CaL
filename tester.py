@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pprint import pprint
 from mongoHelper import *
-conn = MongoClient('localhost', 27017)
+conn = MongoClient('172.31.89.203', 27017)
 user1 = { "username": "mike","password" : "allstar"}
 user2 = { "username": "mikey","password" : "whoo"}
 ##client = conn #MongoClient('mongodb://localhost:27017')
@@ -25,7 +25,7 @@ for document in user_session_collection.find({}):
 
 session = input("Enter session name: ")
 tmstmp = input("Enter timestamp: ")
-with open('image_'+tmstmp+'.jpg', 'wb') as f:
+with open('received/image_'+tmstmp+'.jpg', 'wb') as f:
     f.write(getTimestampImage(conn, session, tmstmp))
     #for chunk in str(getTimestampImage(conn, session, tmstmp)).iter_content(chunk_size=512 * 1024):
         #f.write(chunk)

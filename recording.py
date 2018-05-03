@@ -37,7 +37,6 @@ if args.s:
 	
 #GLOBAL Variables
 dictList = []
-#conn = MongoClient('192.168.1.16', 27017)
 
 
 #Gets line from hello_pixy exe. If the line contains "frame", increment. This
@@ -85,6 +84,7 @@ def convertToDict(temp):
 		del tempDict['height']
 		del tempDict['width']
 		tempDict['just_sent'] = False
+		tempDict['image'] = ""
 		tempDictList.append(tempDict)
 	return tempDictList
 		
@@ -102,10 +102,16 @@ def compareToMaster(tempDictList):
 				if(dict['history'] < 25):
 					dict['history'] = dict['history'] + 1
 				if(dict['history'] == 5):
-					filename = 'slides/' + str(dict['time_found']) + '.jpg'
+					filename = 'sent/' + str(dict['time_found']) + '.jpg'
 					camera.capture(filename)
+					# keys = ['time_found', 'image']
+					# mqDict = {x:dict[x] for x in keys}
+					# pprint.pprint(mqDict)
 					file = open(filename,"rb")
-					msg['message'] = file.read()
+					dict['image'] = file.read()
+					msg['image'] = dict['image']
+					msg['message'] = dict['time_found']
+					print("SENDING TIMESTAMP/IMAGE")
 					channel.basic_publish(exchange=rmq_params.rmq_params["exchange"],
 								routing_key=rmq_params.rmq_params["pixycam_queue"],
 								body=pickle.dumps(msg))
@@ -136,8 +142,7 @@ def runPixy():
 		requestPixycamFrame(stringList)
 		tempDictList = convertToDict(stringList)
 		compareToMaster(tempDictList)
-		print("MASTER DICT")
-		print(len(dictList))
+		#print("MASTER DICT:" + str(len(dictList)))
 		for elem in dictList:
 			if(elem['history'] > 5) and elem['just_sent'] == True:
 				pprint.pprint(elem)
@@ -160,7 +165,7 @@ try:
 	parameters = pika.ConnectionParameters(rmq_host, 5672, rmq_params.rmq_params["vhost"], credentials)
 	connection = pika.BlockingConnection(parameters)
 	channel = connection.channel()
-	msg = {'username': rmq_params.rmq_params['username'], 'password':rmq_params.rmq_params['password'], 'message': ""}
+	msg = {'username': rmq_params.rmq_params['username'], 'password':rmq_params.rmq_params['password'], 'message': "", 'image': ""}
 	print("RABBITMQ SETUP COMPLETE")
 	
 	#Set up piping from ./hello_pixy executable
