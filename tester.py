@@ -18,8 +18,16 @@ user2 = { "username": "mikey","password" : "whoo"}
 #cursor = m.Users.find({})
 db = conn.CaL
 user_session_collection = db['ehutz'] # Stores user requested timestamps corresponding to images per session
+list_of_sessions = getSessions(conn)
 
 for document in user_session_collection.find({}):
     pprint(document)
-    
-print(userExists(conn, 'ehutz'))
+
+session = input("Enter session name: ")
+tmstmp = input("Enter timestamp: ")
+with open('image_'+tmstmp+'.jpg', 'wb') as f:
+    f.write(getTimestampImage(conn, session, tmstmp))
+    #for chunk in str(getTimestampImage(conn, session, tmstmp)).iter_content(chunk_size=512 * 1024):
+        #f.write(chunk)
+    f.close()
+#print(userExists(conn, 'ehutz'))
