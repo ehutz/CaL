@@ -1,4 +1,5 @@
-from flask import Flask, request, abort
+from pathlib import Path
+from flask import Flask, send_file, request, abort
 import logging
 import socket
 import sys
@@ -149,17 +150,20 @@ if __name__ == '__main__':
     def status():
         print(server_start_time+audio_record_time_seconds)
         print(mktime(datetime.datetime.now().timetuple()))
-        if (float(server_start_time) + float(audio_record_time_seconds)) > mktime(datetime.datetime.now().timetuple()):
+        if (float(server_start_time) + float(audio_record_time_seconds)*2) > mktime(datetime.datetime.now().timetuple()):
             return 'SESSION IN PROGRESS'
         else:
             return 'SESSION COMPLETE'
         
     @app.route("/audio", methods=['GET'])
     def audio():  
-        audio_file = requests.get('http://0.0.0.0:20000/audio/retieve_file?filename='+ session)
-        print(audio_file.content)
-        return audio_file
-        
+        audio_file = requests.get('http://0.0.0.0:20000/audio/retrieve_file?filename='+ session)
+        print(audio_file.headers['content-type'])
+        return 'UNDER CONSTRUCTION'
+	#if Path('~/CaL/'+audio_file).is_file():
+            #return send_file(audio_file, mimetype="audio/wav",attachment_filename=audio_file)
+        #else:
+            #return audio_file # This is a DNE message from audio.py
     '''
     @app.route("/led", methods=['GET', 'POST'])
     def led():
@@ -223,8 +227,8 @@ if __name__ == '__main__':
         elif not custom_exists:
             abort(503)
         return 'Bad'
-    '''    
-    app.run(host="0.0.0.0", port=20002, debug=True)
+    '''
+    #app.run(host="0.0.0.0", port=20002, debug=True)
     
     # END: FLASK
     
@@ -236,8 +240,8 @@ if __name__ == '__main__':
                              + '&session='
                              + session
                              + '&record_time_sec='
-                             + audio_record_time_seconds)
-            
+                             + str(audio_record_time_seconds))
+            print('[Checkpoint] GET request to audio.py to record sent')
             channel.basic_consume(callback_client,
                       queue=rmq_params.rmq_params["client_queue"],
                       no_ack=True)
@@ -245,9 +249,9 @@ if __name__ == '__main__':
             channel.basic_consume(callback_pixycam,
                       queue=rmq_params.rmq_params["pixycam_queue"],
                       no_ack=True)
-            
+
             channel.start_consuming()
-            
+
             sleep(0.1)
     except KeyboardInterrupt:
         pass

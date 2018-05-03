@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+from pathlib import Path
 import logging
 import socket
 import sys
 import array
 import datetime
-from time import sleep, time
+from time import sleep, time, mktime
 from flask import Flask, request, abort, send_file
 from zeroconf import ServiceInfo, Zeroconf
 import fcntl
@@ -140,7 +141,7 @@ def record(record_sec):
 
 def record_to_file(path, record_sec):
     "Records from the microphone and outputs the resulting data to 'path'"
-    sample_width, data = record(record_sec)
+    sample_width, data = record(float(record_sec))
     data = pack('<' + ('h'*len(data)), *data)
 
     wf = wave.open(path, 'wb')
@@ -157,24 +158,38 @@ if __name__ == '__main__':
 
     @app.route("/audio/record",  methods = ['GET'])
     def recordAudio():
+        global requested_audio_filename
         requested_audio_filename = request.args.get('filename', type=str, default= "")
         session_name = request.args.get('session', type=str, default= "")
-        time_to_record_sec = request.args.get('record_time_sec', type=int, default= -1)
-        
+        global time_to_record_sec
+        time_to_record_sec = request.args.get('record_time_sec', type=float, default= -1)
+        print(time_to_record_sec)
         print("Recording...")
+        global audio_record_start_time
+        audio_record_start_time = mktime(datetime.datetime.now().timetuple())
         record_to_file('../CaL_Audio/'+requested_audio_filename + '.wav', time_to_record_sec)
+        print("Finished Recording")
         addSessionAudio(conn, session_name, requested_audio_filename+'.wav')
         return "Done - result written to " + requested_audio_filename + '.wav'
             
     @app.route("/audio/retrieve_file",  methods = ['GET'])
     def getAudio():
-        requested_audio_filename = request.args.get('filename', type=str, default= "")
-        if open('../CaL_Audio/'+requested_audio_filename+'.wav'):
+        #requested_audio_filename = request.args.get('filename', type=str, default= "")
+        if Path('../CaL_Audio/'+requested_audio_filename+'.wav').is_file():
+            print('Sending file...')
             return send_file('../CaL_Audio/'+requested_audio_filename + '.wav', mimetype="audio/wav", as_attachment=True,
                              attachment_filename=requested_audio_filename + '.wav')
         else:
+            print('File DNE')
             return requested_audio_filename + ".wav file does not exist."
     
+    @app.route("/status", methods=['GET'])
+    def status():
+        if (float(audio_record_start_time)+float(time_to_record_sec)*2) > mktime(datetime.datetime.now().timetuple()):
+            return 'SESSION IN PROGRESS'
+        else:
+            return 'SESSION COMPLETE'
+
     app.run(host="0.0.0.0", port=20000, debug=True)
        
     try:
