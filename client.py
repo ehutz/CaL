@@ -13,11 +13,14 @@ from pprint import pprint
 # START: Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", help="TCP_IP")
+parser.add_argument("-u", help="username" )
 args = parser.parse_args()
+username = "ehutz"
 if args.s:
     rmq_host = args.s
     host_ip = args.s
-
+if args.u:
+    username = args.u
 # Setup RabbitMQ
 credentials = pika.PlainCredentials(rmq_params.rmq_params["username"], rmq_params.rmq_params["password"])
 parameters = pika.ConnectionParameters(rmq_host, 5672, rmq_params.rmq_params["vhost"], credentials)
@@ -34,7 +37,7 @@ print('[Checkpoint] Connected to vhost '
       + '\' as user \''
       + rmq_params.rmq_params["username"]
       + '\'')
-msg = {'username': rmq_params.rmq_params['username'], 'password':rmq_params.rmq_params['password'], 'message': ""}
+msg = {'username': username, 'password':rmq_params.rmq_params['password'], 'message': ""}
 while True:
     inputting = input("Press enter to make a timestamp")
     now = datetime.datetime.now()
@@ -43,7 +46,7 @@ while True:
                   routing_key=rmq_params.rmq_params["client_queue"],
                   body=pickle.dumps(msg))
     time.sleep(1)
-    
+
     status = requests.get('http://'+host_ip+':20000/status')
     print(status.text)
     if status.text == 'SESSION COMPLETE':
@@ -53,7 +56,6 @@ while True:
         with open('./'+audio_filename, 'wb') as f:
             for chunk in audio.iter_content(chunk_size=512 * 1024):
                 f.write(chunk)
-            f.close() 
+            f.close()
         break
-    
-            
+

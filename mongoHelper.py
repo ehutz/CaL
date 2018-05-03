@@ -73,7 +73,7 @@ def addTimestampMulti(conn, usernames, session, timestamp, image):
                 curr_set = set(curr_stamps.append(timestamp))
                 curr_stamps = list(curr_set)
                 #print(",".join(curr_stamps))
-                pid_collection.update({'session' : session}, {'timestamps': curr_stamps})
+                pid_collection.update({'session' : session}, {'session' : session, 'timestamps': curr_stamps})
             else:
                 #print('ELSE: new collection')
                 pid_collection.insert({'session' : session, 'timestamps' : [timestamp]})
