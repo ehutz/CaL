@@ -31,14 +31,14 @@ from pymongo import MongoClient #shouldnt need both
 import pymongo
 from flask import * #shouldnt need from
 import pprint
+from pptx import Presentation
+import PyPDF2
+import webbrowser
+from picamera import PiCamera
 
 #GLOBAL Variables
 dictList = []
-
-#Set up piping from ./hello_pixy executable
-process = subprocess.Popen(['sudo', './hello_pixy'], stdout=subprocess.PIPE)
-app = Flask(__name__)
-client = MongoClient()
+conn = MongoClient('192.168.1.16', 27017)
 
 #Gets line from hello_pixy exe. If the line contains "frame", increment. This
 # allows the storage of each line prior to getting the following frame. If
@@ -97,42 +97,22 @@ def compareToMaster(tempDictList):
 		found = False
 		for dict in dictList:
 			if(dict['sig'] == elem['sig']):
-				print("dict sig found in curr frame")
 				found = True
 				if(dict['history'] < 25):
 					dict['history'] = dict['history'] + 1
+				if(dict['history'] == 5):
+					#print('/slides/' + str(dict['time_found']) + '.jpg')
+					camera.capture('slides/' + str(dict['time_found']) + '.jpg')
 				break
 			else:
 				dict['history'] = dict['history'] - 1
 				if(dict['history'] < 0):
 					dictList.remove(dict)
-				break
 		if(found == False):
 			elem['history'] = 1
 			dictList.append(elem)
 		else:
 			break
-
-#This GET method uses flask to send retrieved PixyCam data to the server. The server
-# calls this function and requests a single sig to get the data of which is 
-# represented by the val parameter. data will hold the JSON equivalent of the sig
-# dictionary requested. If the requested sig has never been detected, an empty JSON
-# object is returned. Otherwise, the id parameter created by MongoDB is removed,
-# the JSON object stores the requested sig data, and the JSON object is returned.
-@app.route('/PixyCam/<int:val>', methods=['GET'])
-def upload_data(val):
-	client = MongoClient()
-	db = client['pixycam']
-	collection = db['pixyData']
-	data = {}
-	
-	#if len(collection.find({'sig': '{}'.format(val)})) != 0:
-	
-	for row in collection.find({'sig': '{}'.format(val)}):
-		del row['_id']
-		data = row
-	print(json.dumps(data,indent = 3))
-	return (json.dumps(data, indent=3))
 	
 #The stringList holds data from a single frame, each position in the list holds a
 # string containing a signature and its data. The string list is populated by the
@@ -144,25 +124,20 @@ def upload_data(val):
 # in dictList matches a sig in the database, it updates it; if the sig is not in
 # the database, insert it.
 def runPixy():
-	client = MongoClient()
-	db = client['pixycam']
-	client.drop_database('pixycam')
-	collection = db['pixyData']
 	while True:
 		stringList = []
 		requestPixycamFrame(stringList)
 		tempDictList = convertToDict(stringList)
-		print("CURRET FRAME DICT")
-		print(len(tempDictList))
-		for elem in tempDictList:
-			pprint.pprint(elem)
+		print("CURRET FRAME DICT SIZE: " + str(len(tempDictList)))
 		compareToMaster(tempDictList)
 		print("MASTER DICT")
 		print(len(dictList))
 		for elem in dictList:
 			if(elem['history'] > 5):
+				#Send to server
 				pprint.pprint(elem)
 		print('\n')
+		
 
 		# for elem in dictList:
 			# found = False;
@@ -183,12 +158,20 @@ def runPixy():
 #Main -> Creates a process to read, store, and update data provded by the PixyCam.
 # Runs the flask app to connect to and communicate with the server. Then joins
 # these two processes together.
-if __name__ == '__main__':
-	p = multiprocessing.Process(target=runPixy)
-	p.start()
-	app.run(host='0.0.0.0', port=8090, debug=True)
-	p.join()
-	
+
+try:
+	#Set up camera
+	camera = PiCamera()
+	camera.start_preview()
+	time.sleep(2)
+	print("CAMERA RUNNING")
+
+	#Set up piping from ./hello_pixy executable
+	process = subprocess.Popen(['sudo', './hello_pixy'], stdout=subprocess.PIPE)
+	runPixy()
+finally:
+	camera.stop_preview()
+	print("CAMERA STOPPED")
 	
 	
 	
