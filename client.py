@@ -6,6 +6,7 @@ import pika
 import pickle
 import datetime
 import time
+from time import sleep
 from flask import Flask, request
 import requests
 
@@ -43,10 +44,10 @@ while True:
                   body=pickle.dumps(msg))
     time.sleep(1)
     
-    status = requests.get('http://'+host_ip+':20002/status')
+    status = requests.get('http://'+host_ip+':20000/status')
     print(status.text)
     if status.text == 'SESSION COMPLETE':
-        audio_file = requests.get('http://'+host_ip+':20002/audio')
-        break
+        audio_file = requests.get('http://'+host_ip+':20000/audio/retrieve_file')
+       	break
     
             
