@@ -49,6 +49,8 @@ RATE = 44100
 
 conn = MongoClient(host_ip, 27017)
 
+RECORD_AUDIO = False
+
 def is_silent(snd_data):
     "Returns 'True' if below the 'silent' threshold"
     return max(snd_data) < THRESHOLD
@@ -138,7 +140,7 @@ def record(record_sec):
     #r = trim(r)
     #r = add_silence(r, 0.5)
     return sample_width, r
-
+'''
 def record_to_file(path, record_sec):
     "Records from the microphone and outputs the resulting data to 'path'"
     sample_width, data = record(float(record_sec))
@@ -150,7 +152,7 @@ def record_to_file(path, record_sec):
     wf.setframerate(RATE)
     wf.writeframes(data)
     wf.close()
-
+'''
 if __name__ == '__main__':
     print('[Checkpoint] audio.py running...')
     
@@ -158,6 +160,8 @@ if __name__ == '__main__':
 
     @app.route("/audio/record",  methods = ['GET'])
     def recordAudio():
+        global RECORD_AUDIO
+        RECORD_AUDIO = True
         global requested_audio_filename
         requested_audio_filename = request.args.get('filename', type=str, default= "")
         global session_name
@@ -166,11 +170,19 @@ if __name__ == '__main__':
         time_to_record_sec = request.args.get('record_time_sec', type=float, default= -1)
         global audio_record_start_time
         audio_record_start_time = mktime(datetime.datetime.now().timetuple())
-        record_to_file('../CaL_Audio/'+requested_audio_filename + '.wav', time_to_record_sec)
-        print("Finished Recording")
-        addSessionAudio(conn, session_name, requested_audio_filename+'.wav')
-        setStatus(conn, None, 'COMPLETE')
-        return "Done - result written to " + requested_audio_filename + '.wav'
+        #record_to_file('../CaL_Audio/'+requested_audio_filename + '.wav', time_to_record_sec)
+        #print("Finished Recording")
+        process = subprocess.Popen(['sudo', './record_audio.py'
+                                    + ' -p ' + '../CaL_Audio/'+requested_audio_filename + '.wav'
+                                    + ' -t ' + time_to_record_sec
+                                    + ' -r ' + RATE
+                                    + ' -c ' + host_ip
+                                    + ' -s ' + session_name
+                                    + ' -f ' + requested_audio_filename
+                                    ], stdout=subprocess.PIPE)
+        #addSessionAudio(conn, session_name, requested_audio_filename+'.wav')
+        #setStatus(conn, None, 'COMPLETE')
+        return "Recording audio..."
             
     @app.route("/audio/retrieve_file",  methods = ['GET'])
     def getAudio():
