@@ -187,7 +187,11 @@ def getPixyCamImages(conn, session):
     db = conn.CaL
     admin_coll = db[rmq_params.rmq_params['username']]
     admin_session_doc = admin_coll.find_one({'session' : session})
-    print('HERE0')
+    
+    cursor = admin_coll.find({})
+    for c in cursor:
+        print(c["session"])
+    
     if(admin_session_doc is not None):
         print('HERE1')
         if (admin_session_doc['timestamps'] is not None):
