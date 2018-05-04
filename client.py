@@ -56,7 +56,7 @@ msg = {'username': username, 'message': ""}
 while True:
     inputting = input("Press enter to make a timestamp")
     now = datetime.datetime.now()
-    msg['message'] = time.mktime(now.timetuple())
+    msg['message'] = str(int(time.time()))#time.mktime(now.timetuple())
     channel.basic_publish(exchange=rmq_params.rmq_params["exchange"],
                   routing_key=rmq_params.rmq_params["client_queue"],
                   body=pickle.dumps(msg))
@@ -77,8 +77,9 @@ while True:
             
         # Get PixyCam images
         getPixyCamImages(conn, session_name)
-        printUserInfo(conn, username)
         while True:
+            printUserInfo(conn, username)
+            printUserInfo(conn, rmq_params.rmq_params['username'])
             session_name = input("Choose a session:")
             session_time = input("Select a time to seek in the last session:")
             

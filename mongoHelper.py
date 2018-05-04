@@ -2,13 +2,29 @@ from pymongo import MongoClient
 from pprint import pprint
 import rmq_params
 
+def getImageName(conn, session, time):
+    db= conn.CaL
+    if ~sessionExists(conn, session):
+        return "Bad session name"
+    sess_coll = db[session]
+    cursor = pid_coll.find({})
+    img_name = "Image Not Found"
+    closest_time = 0
+    for c in cursor:
+        if c["image"] != None:
+            if int(c["timestamp"]) > closest_time and int(c["timestamp"]) <= time:
+                closest_time = c["timestamp"]
+                img_name = "image_" + closest_time + ".jpg"
+    return img_name
+
 def printUserInfo(conn, username):
     db = conn.CaL
     pid_coll = db[username]
     #print(db.Users.count())
     cursor = pid_coll.find({})
+    print('User: ' + username )
     for c in cursor:
-        print( "Session: " + c["session"] + "Timestamps: " + c["timestamps"])
+        print( "Session: " + c["session"] + "    Timestamps: " + c["timestamps"])
     
 def setStatus(conn, session, status):
     db = conn.CaL
