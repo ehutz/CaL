@@ -149,4 +149,4 @@ wf.writeframes(data)
 wf.close()
 
 addSessionAudio(conn, session_name, requested_audio_filename+'.wav')
-setStatus(conn, None, 'COMPLETE')
+setStatus(conn, session_name, 'COMPLETE')
