@@ -182,12 +182,17 @@ def getPixyCamImages(conn, session):
     db = conn.CaL
     admin_coll = db[rmq_params.rmq_params['username']]
     admin_session_doc = admin_coll.find_one({'session' : session})
+    print('HERE0')
     if(admin_session_doc is not None):
+        print('HERE1')
         if (admin_session_doc['timestamps'] is not None):
+            print('HERE2')
             admin_tmstmp_list = admin_session_doc['timestamps'].split(",")
             for tmstmp in admin_tmstmp_list:
                 if getTimestampImage(conn, session, tmstmp) is not None:
+                    print('HERE3')
                     with open('../CaL_Images/image_'+tmstmp+'.jpg', 'wb') as f:
+                        print('HERE4')
                         f.write(getTimestampImage(conn, session, tmstmp))
                         f.close()
     return 'DONE'
