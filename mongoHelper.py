@@ -25,9 +25,11 @@ def getStatus(conn):
 #returns the current session's name
 def getCurrentSession(conn):
     db = conn.CaL
-    cursor = db.Status.find({})
+    stat_coll = db['Status']
+    cursor = stat_coll.find({})
     for c in cursor:
-        return c["current_session"]
+        print(c['current_session'])
+        return c['current_session']
 
 #checks if a username exists and returns the boolean
 def userExists(conn, username):
