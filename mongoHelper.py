@@ -10,6 +10,7 @@ def setStatus(conn, session, status):
         session = stat_doc['current_session']
     stat_coll.remove()
     stat_coll.insert({'current_session': session, 'status': status})
+    pprint(stat_coll['current_session'])
 
 #returns the session's status
 def getStatus(conn):
