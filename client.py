@@ -11,6 +11,8 @@ from flask import Flask, request
 import requests
 from pprint import pprint
 from mongoHelper import *
+import subprocess
+from pathlib import Path
 
 # START: Parse arguments
 parser = argparse.ArgumentParser()
@@ -75,5 +77,24 @@ while True:
             
         # Get PixyCam images
         getPixyCamImages(conn, session_name)
-        break
-
+        printUserInfo(conn, username)
+        while True:
+            session_name = input("Choose a session:")
+            session_time = input("Select a time to seek in the last session:")
+            
+            
+            command = "ffmpeg -i %s -ss %s ./temp.wav" % (session_name+'.wav',
+                                                                        session_time)
+            myfile = Path("./temp.wav")
+            
+            process = subprocess.call(['rm', './temp.wav'])
+            while process != 0:
+                sleep(0.01)
+            process = subprocess.Popen(command.split())
+            while process.poll() == None:
+                sleep(0.1)
+            process = subprocess.call(['aplay', './temp.wav'])
+            while process != 0:
+                sleep(0.01)
+           
+           
