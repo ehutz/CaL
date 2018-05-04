@@ -188,7 +188,7 @@ def getPixyCamImages(conn, session):
     admin_coll = db[rmq_params.rmq_params['username']]
     admin_session_doc = admin_coll.find_one({'session' : session})
     
-    cursor = admin_coll.find({})
+    cursor = admin_coll.find({'session' : session})
     for c in cursor:
         print(c["session"])
     
