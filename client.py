@@ -64,6 +64,7 @@ while True:
     print(status.text)
     if getStatus(conn) == 'COMPLETE':
         session_name = getCurrentSession(conn)
+        print(session_name)
         audio = requests.get('http://'+host_ip+':20000/audio/retrieve_file')
         audio_filename = (audio.headers['content-disposition']).split('filename=')[-1]
         #audio_file = audio.file[audio_filename]

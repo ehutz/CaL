@@ -71,7 +71,7 @@ def callback_pixycam(ch, method, properties, body):
     #pprint(pickle.loads(body))
     
     addTimestamp(conn, bod['username'], session, str(float(bod['message']) - float(server_start_time)), bod['image'])
-    
+    print('Received PixyCam')
     #exit() # Used to terminate server
         
 if __name__ == '__main__':
