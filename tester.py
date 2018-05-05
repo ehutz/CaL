@@ -6,6 +6,7 @@ from time import sleep
 import subprocess
 import rmq_params
 conn = MongoClient('192.168.1.16', 27017)
+#conn = MongoClient('localhost', 27017)
 user1 = { "username": "mike","password" : "allstar"}
 user2 = { "username": "mikey","password" : "whoo"}
 ##client = conn #MongoClient('mongodb://localhost:27017')

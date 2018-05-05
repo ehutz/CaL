@@ -10,7 +10,7 @@ from flask import Flask, request, abort, send_file
 from zeroconf import ServiceInfo, Zeroconf
 import fcntl
 import struct
-import mongodb_setup
+#import mongodb_setup
 from mongoHelper import *
 import subprocess
 

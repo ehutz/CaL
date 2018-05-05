@@ -42,7 +42,7 @@ channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue=rmq_params.
 channel.queue_declare(queue=rmq_params.rmq_params["pixycam_queue"], auto_delete=True)
 channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue=rmq_params.rmq_params["pixycam_queue"])
             
-conn = MongoClient('localhost', 27017)
+conn = MongoClient('0.0.0.0', 27017)
 print(addSession(conn, session))
 if sessionExists(conn, session) == False:
     print("Bad name")

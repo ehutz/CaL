@@ -5,7 +5,6 @@ from struct import pack
 import pyaudio
 import wave
 from mongoHelper import *
-import mongodb_setup
 
 # START: Parse arguments
 parser = argparse.ArgumentParser()
