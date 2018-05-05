@@ -103,7 +103,7 @@ def addSession(conn, session):
 #it is not attempting to make a new session if the session does not already exist
 def addSessionAudio(conn, session, audio):
     db = conn.CaL
-    if sessionExists(conn, session) == True:
+    if sessionExists(conn, session) == False:
         return False
     db.Session.update({"session":session}, {"session":session, "audio":audio})
     return True
@@ -192,7 +192,7 @@ def getSessions(conn):
     #cursor = db.Session.find({})
     sList = []
     #for c in cursor:
-    for c in db.Session.find():
+    for c in db.Session.find({}):
         if c is not None:
             #sList.append((c.session, c.audio))
             sList.append(c)

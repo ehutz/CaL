@@ -21,11 +21,11 @@ user2 = { "username": "mikey","password" : "whoo"}
 #print(m.Users.count())
 #cursor = m.Users.find({})
 db = conn.CaL
-user_session_collection = db['ehutz'] # Stores user requested timestamps corresponding to images per session
-list_of_sessions = getSessions(conn)
+#user_session_collection = db['ehutz'] # Stores user requested timestamps corresponding to images per session
+#list_of_sessions = getSessions(conn)
 
-for document in user_session_collection.find({}):
-    pprint(document)
+#for document in user_session_collection.find({}):
+    #pprint(document)
 '''
 session = input("Enter session name: ")
 tmstmp = input("Enter timestamp: ")
