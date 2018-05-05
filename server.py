@@ -43,7 +43,13 @@ channel.queue_declare(queue=rmq_params.rmq_params["pixycam_queue"], auto_delete=
 channel.queue_bind(exchange=rmq_params.rmq_params["exchange"], queue=rmq_params.rmq_params["pixycam_queue"])
             
 conn = MongoClient('localhost', 27017)
-addSession(conn, session)
+print(addSession(conn, session))
+if sessionExists(conn, session) == False:
+    print("Bad name")
+else:
+    print('Session exists in Mongo')
+    
+pprint(getSessions(conn))
 setStatus(conn, session, 'IN PROGRESS')
 #pprint(getSessions(conn))
 #pprint(getUsernames(conn))
@@ -62,7 +68,7 @@ def callback_client(ch, method, properties, body):
     bod = pickle.loads(body)
     #pprint(pickle.loads(body))
     
-    addTimestamp(conn, bod['username'], session, str(bod['message'] - server_start_time), None)
+    addTimestamp(conn, bod['username'], session, str(float(bod['message']) - float(server_start_time)), None)
     
     #exit() # Used to terminate server
         

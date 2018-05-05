@@ -1,10 +1,12 @@
-setup:
+Setup:
 1. make sure the rabbitmq server has ehutz as a user with all permissions on the specified vhost
 2. run clients with -s containing the rabbitmq server host's ip address
-3. (audio)
 
-Order to run:
-audio.py
-server.py
-// Add PixyCam and PiCam scripts to this list
-client.py
+DEMO:
+1. Liz: python3 audio.py -s <Liz's IP>
+2. Liz: python3 server.py -t 30
+3. Jordan: python3 recording.py -s <Liz's IP>
+4. Madelyn: python3 client.py -s <Liz's IP> -u <username> -p <password>
+
+Images stored from directry CaL to ../CaL_Images on client's computer (Madelyn)
+Audio stored in current directory (CaL) on client's computer (Madelyn)

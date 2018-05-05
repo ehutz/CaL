@@ -4,7 +4,7 @@ import rmq_params
 
 def getImageName(conn, session, time):
     db= conn.CaL
-    if ~sessionExists(conn, session):
+    if sessionExists(conn, session) == False:
         return "Bad session name"
     sess_coll = db[session]
     cursor = pid_coll.find({})
@@ -71,6 +71,7 @@ def findPassword(conn, username):
 #checks if a username exists and returns the boolean
 def sessionExists(conn, session):
     db = conn.CaL
+    print('sessionExists(): ' + session)
     if db.Session.find({'session' : session}).count() > 0:
         return True
     return False
@@ -90,18 +91,19 @@ def addUser(conn, username, password):
 #it is not attempting to overwrite an existing session
 def addSession(conn, session):
     db = conn.CaL
-    if sessionExists(conn, session):
+    print('addSession(): ' + session)
+    if sessionExists(conn, session) == True:
         #print(db.Session.count())
         return False
     db.Session.insert({"session":session, "audio":None})
-    #print(db.Session.count())
+    print(db.Session.count())
     return True
 
 #adds audio filename with .wav extension in the name to an existing session. Returns true if successful.
 #it is not attempting to make a new session if the session does not already exist
 def addSessionAudio(conn, session, audio):
     db = conn.CaL
-    if sessionExists(conn, session):
+    if sessionExists(conn, session) == True:
         return False
     db.Session.update({"session":session}, {"session":session, "audio":audio})
     return True
