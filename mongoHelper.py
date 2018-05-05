@@ -7,7 +7,7 @@ def getImageName(conn, session, time):
     if sessionExists(conn, session) == False:
         return "Bad session name"
     sess_coll = db[session]
-    cursor = pid_coll.find({})
+    cursor = sess_coll.find({})
     img_name = "Image Not Found"
     closest_time = 0
     for c in cursor:
