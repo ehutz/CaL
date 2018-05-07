@@ -5,7 +5,7 @@ from pathlib import Path
 from time import sleep
 import subprocess
 import rmq_params
-conn = MongoClient('192.168.1.16', 27017)
+conn = MongoClient('172.29.105.49', 27017)
 #conn = MongoClient('localhost', 27017)
 user1 = { "username": "mike","password" : "allstar"}
 user2 = { "username": "mikey","password" : "whoo"}
